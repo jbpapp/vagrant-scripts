@@ -1,16 +1,39 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
-echo ">>> Setting up PHPMyAdmin"
+# If phpmyadmin does not exist
+if [ ! -f /etc/phpmyadmin/config.inc.php ];
+then
 
-# Install PHPMyAdmin
-sudo apt-get install phpmyadmin -q -y
+	echo ">>> Setting up PHPMyAdmin"
 
-# Configuring PHPMyAdmin
-echo 'phpmyadmin phpmyadmin/dbconfig-install boolean false' | debconf-set-selections
-echo 'phpmyadmin phpmyadmin/reconfigure-webserver multiselect apache2' | debconf-set-selections
+	# Used debconf-get-selections to find out what questions will be asked
+	# This command needs debconf-utils
 
-# Enable PHPMyAdmin
-sudo ln -s /etc/phpmyadmin/apache.conf /etc/apache2/conf-enabled
+	# Handy for debugging. clear answers phpmyadmin: echo PURGE | debconf-communicate phpmyadmin
 
-# Restart Apache
-sudo service apache2 restart
+	echo 'phpmyadmin phpmyadmin/dbconfig-install boolean false' | debconf-set-selections
+	echo 'phpmyadmin phpmyadmin/reconfigure-webserver multiselect apache2' | debconf-set-selections
+
+	echo 'phpmyadmin phpmyadmin/app-password-confirm password vagrant' | debconf-set-selections
+	echo 'phpmyadmin phpmyadmin/mysql/admin-pass password vagrant' | debconf-set-selections
+	echo 'phpmyadmin phpmyadmin/password-confirm password vagrant' | debconf-set-selections
+	echo 'phpmyadmin phpmyadmin/setup-password password vagrant' | debconf-set-selections
+	echo 'phpmyadmin phpmyadmin/database-type select mysql' | debconf-set-selections
+	echo 'phpmyadmin phpmyadmin/mysql/app-pass password vagrant' | debconf-set-selections
+
+	echo 'dbconfig-common dbconfig-common/mysql/app-pass password vagrant' | debconf-set-selections
+	echo 'dbconfig-common dbconfig-common/mysql/app-pass password' | debconf-set-selections
+	echo 'dbconfig-common dbconfig-common/password-confirm password vagrant' | debconf-set-selections
+	echo 'dbconfig-common dbconfig-common/app-password-confirm password vagrant' | debconf-set-selections
+	echo 'dbconfig-common dbconfig-common/app-password-confirm password vagrant' | debconf-set-selections
+	echo 'dbconfig-common dbconfig-common/password-confirm password vagrant' | debconf-set-selections
+
+	apt-get -y install phpmyadmin
+
+	# Enable PHPMyAdmin
+	sudo ln -s /etc/phpmyadmin/apache.conf /etc/apache2/conf-enabled
+
+	# Restart Apache
+	sudo service apache2 restart
+	
+fi
